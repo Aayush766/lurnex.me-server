@@ -24,12 +24,15 @@ const {
     updateStudentDetails,
     addExtraHours,
     transferStudent,
+    getStudentCompletedClasses,
     
     // Batch Controller Imports
     createBatch, 
     getAllBatches, 
     getBatchDetails,
-    updateBatch
+    updateBatch,
+    getLiveClassesList
+
 } = require('../controllers/adminController'); 
 
 // All routes in this file are protected and require admin access
@@ -68,5 +71,7 @@ router.post('/batches', createBatch);
 router.get('/batches', getAllBatches);
 router.get('/batches/:id', getBatchDetails);
 router.patch('/batches/:id', updateBatch);
+router.get('/classes/live', getLiveClassesList);
+router.get('/students/:id/completed-classes', getStudentCompletedClasses);
 
 module.exports = router;

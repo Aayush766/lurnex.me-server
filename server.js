@@ -16,6 +16,7 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(err => console.log(err));
 
 // API Routes
+app.use('/api/mis', require('./routes/misRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/classes', require('./routes/classRoutes'));
 app.use('/api/assessments', require('./routes/assessmentRoutes'));

@@ -409,7 +409,13 @@ exports.addExtraHours = async (req, res) => {
 // @route   PATCH /api/admin/students/:id/transfer
 exports.transferStudent = async (req, res) => {
     const studentId = req.params.id;
-    const { type, batchId } = req.body; // type will be 'batch' or 'one-on-one'
+    // Expecting the final state from the frontend
+    const { isOneOnOne, batchId } = req.body; 
+
+    // 1. Basic Validation
+    if (isOneOnOne === undefined) {
+        return res.status(400).json({ message: 'isOneOnOne status is required.' });
+    }
 
     try {
         const student = await User.findById(studentId);
@@ -418,29 +424,45 @@ exports.transferStudent = async (req, res) => {
             return res.status(404).json({ message: 'Student not found.' });
         }
 
-        // --- Logic to handle transfer ---
-        if (type === 'one-on-one') {
-            student.isOneOnOne = true;
-            student.batchId = undefined; // Clear batch assignment
-        } else if (type === 'batch' && batchId) {
-            // NOTE: You should ideally validate that 'batchId' is a valid Batch ID
-            student.isOneOnOne = false;
-            student.batchId = batchId;
+        let updateFields = { isOneOnOne: isOneOnOne };
+
+        if (isOneOnOne) {
+            // If setting to 1-on-1, explicitly clear batchId
+            updateFields.batchId = null; 
         } else {
-            return res.status(400).json({ message: 'Invalid transfer type or missing batch ID.' });
+            // If assigning to a batch, validate the batchId
+            if (!batchId) {
+                return res.status(400).json({ message: 'Batch ID is required for batch assignment.' });
+            }
+            
+            // CRUCIAL: Validate the batch exists
+            const batchExists = await Batch.findById(batchId);
+            if (!batchExists) {
+                return res.status(400).json({ message: 'Invalid Batch ID provided.' });
+            }
+            
+            updateFields.batchId = batchId;
         }
         
-        const updatedStudent = await student.save();
+        // Use findByIdAndUpdate for an atomic update and to return the new document
+        const updatedStudent = await User.findByIdAndUpdate(
+            studentId,
+            updateFields,
+            { new: true, runValidators: true }
+        )
+        // Ensure you populate the batchId again for the frontend's table update
+        .select(studentProjection) 
+        .populate('batchId', 'name'); 
 
-        // Return updated student, populated with new batch details if applicable
-        res.json(await User.findById(updatedStudent._id)
-            .select(studentProjection)
-            .populate('batchId', 'name')
-        ); 
+        if (!updatedStudent) {
+             return res.status(500).json({ message: 'Failed to update student assignment.' });
+        }
+
+        res.json({ message: 'Student assignment updated successfully.', student: updatedStudent });
 
     } catch (error) {
-        console.error("Transfer student error:", error);
-        res.status(500).json({ message: 'Server Error: Failed to transfer student.' });
+        console.error("Transfer Student Error:", error);
+        res.status(500).json({ message: 'Server Error during student transfer.' });
     }
 };
 
@@ -633,9 +655,23 @@ exports.scheduleClassForTrainer = async (req, res) => {
 // @route   GET /api/admin/classes
 exports.getAllClasses = async (req, res) => {
     try {
-        const classes = await Class.find({}).sort({ startTime: -1 }).populate('trainer', 'name');
-        res.json(classes);
+        const classes = await Class.find({})
+            .sort({ startTime: -1 })
+            .populate('trainer', 'name email')
+            .populate('batchId', 'name')
+            .populate('studentIds', 'name email') // <--- IMPORTANT
+            .lean();
+
+        // Attach student list to each class
+        const finalList = classes.map(cls => ({
+            ...cls,
+            enrolledStudents: cls.studentIds || [],
+            studentCount: cls.studentIds?.length || 0
+        }));
+
+        res.json(finalList);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
@@ -696,51 +732,83 @@ exports.loginUser = async (req, res) => {
 
 
 exports.createBatch = async (req, res) => {
-    const { name, timing, course, trainerId } = req.body;
-    
-    try {
-        const batchExists = await Batch.findOne({ name });
-        if (batchExists) {
-            return res.status(409).json({ message: 'A batch with this name already exists.' });
-        }
+  const { name, timing, course, trainerId, subjectAssignments, isActive } = req.body;
 
-        const trainer = await User.findById(trainerId);
-        if (!trainer || trainer.role !== 'trainer') {
-             return res.status(404).json({ message: 'Assigned trainer not found or is not a trainer.' });
-        }
-
-        const newBatch = await Batch.create({
-            name,
-            timing,
-            course,
-            trainer: trainerId
-        });
-
-        // Populate trainer name for immediate response
-        const createdBatch = await newBatch.populate('trainer', 'name email'); 
-        res.status(201).json(createdBatch);
-
-    } catch (error) {
-        console.error("Create batch error:", error);
-        res.status(500).json({ message: 'Server Error during batch creation.' });
+  try {
+    // Optional: still prevent duplicate names if provided
+    if (name) {
+      const batchExists = await Batch.findOne({ name });
+      if (batchExists) {
+        return res
+          .status(409)
+          .json({ message: 'A batch with this name already exists.' });
+      }
     }
+
+    // ✅ Normalize subjectAssignments coming from frontend
+    let normalizedAssignments = [];
+    if (Array.isArray(subjectAssignments)) {
+      normalizedAssignments = subjectAssignments.map((row) => ({
+        subject: row.subject || course || 'General',
+        trainer: row.trainerId || row.trainer || undefined,
+        timing: row.timing || timing || '',
+      }));
+    }
+
+    // Optional top-level trainer validation if provided
+    let trainerField = undefined;
+    if (trainerId) {
+      const trainer = await User.findById(trainerId);
+      if (!trainer || trainer.role !== 'trainer') {
+        return res.status(404).json({
+          message: 'Assigned trainer not found or is not a trainer.',
+        });
+      }
+      trainerField = trainerId;
+    }
+
+    const newBatch = await Batch.create({
+      name,
+      timing,
+      course: course || 'General',
+      trainer: trainerField,
+      subjectAssignments: normalizedAssignments,
+      isActive: typeof isActive === 'boolean' ? isActive : true,
+    });
+
+    const createdBatch = await newBatch.populate('trainer', 'name email');
+    res.status(201).json(createdBatch);
+  } catch (error) {
+    console.error('Create batch error:', error);
+    res
+      .status(500)
+      .json({ message: 'Server Error during batch creation.' });
+  }
 };
 
 // @desc    Get all batches
 // @route   GET /api/admin/batches
 exports.getAllBatches = async (req, res) => {
-    try {
-        // Populate the trainer's name for display and sort by name
-        const batches = await Batch.find({})
-            .populate('trainer', 'name email')
-            .sort({ name: 1 });
-            
-        res.json(batches);
-    } catch (error) {
-        console.error("Get all batches error:", error);
-        res.status(500).json({ message: 'Server Error: Failed to fetch batches.' });
-    }
+  try {
+    // Optional: allow ?status=active / archived via query later if you want
+    const { status } = req.query;
+
+    const filter = {};
+    if (status === 'active') filter.isActive = true;
+    if (status === 'archived' || status === 'closed') filter.isActive = false;
+
+    const batches = await Batch.find(filter)
+      .populate('trainer', 'name email');
+
+    res.json(batches);
+  } catch (error) {
+    console.error('Get all batches error:', error);
+    res
+      .status(500)
+      .json({ message: 'Server Error: Failed to fetch batches' });
+  }
 };
+
 
 // @desc    Get batch details, including scheduled and past classes
 // @route   GET /api/admin/batches/:id
@@ -776,36 +844,144 @@ exports.getBatchDetails = async (req, res) => {
 // @desc    Update batch details (name, timing, trainer, course)
 // @route   PATCH /api/admin/batches/:id
 exports.updateBatch = async (req, res) => {
-    const { name, timing, course, trainerId, isActive } = req.body;
-    
+  const { name, timing, course, trainerId, isActive, subjectAssignments } = req.body;
+
+  try {
+    const batch = await Batch.findById(req.params.id);
+
+    if (!batch) {
+      return res.status(404).json({ message: 'Batch not found.' });
+    }
+
+    // Optional trainer change
+    if (trainerId) {
+      const trainer = await User.findById(trainerId);
+      if (!trainer || trainer.role !== 'trainer') {
+        return res.status(404).json({
+          message: 'Assigned trainer not found or is not a trainer.',
+        });
+      }
+      batch.trainer = trainerId;
+    }
+
+    if (name) batch.name = name;
+    if (timing) batch.timing = timing;
+    if (course) batch.course = course;
+
+    if (typeof isActive === 'boolean') {
+      batch.isActive = isActive;
+    }
+
+    // ✅ Update subjectAssignments if passed from frontend
+    if (Array.isArray(subjectAssignments)) {
+      batch.subjectAssignments = subjectAssignments.map((row) => ({
+        subject: row.subject || course || 'General',
+        trainer: row.trainerId || row.trainer || undefined,
+        timing: row.timing || '',
+      }));
+    }
+
+    const updatedBatch = await batch.save();
+    res.json(await updatedBatch.populate('trainer', 'name email'));
+  } catch (error) {
+    console.error('Update batch error:', error);
+    res
+      .status(500)
+      .json({ message: 'Server Error during batch update.' });
+  }
+};
+
+exports.getLiveClassesList = async (req, res) => { // NEW FUNCTION ADDED
     try {
-        const batch = await Batch.findById(req.params.id);
+        const now = new Date();
 
-        if (!batch) {
-            return res.status(404).json({ message: 'Batch not found.' });
-        }
+        // 1. Find all classes that are currently live
+        const liveClasses = await Class.find({
+            startTime: { $lte: now },
+            endTime: { $gte: now }
+        })
+        .populate('trainer', 'name') // Populate the trainer's name
+        .select('title startTime endTime zoomLink'); // Select only necessary fields
 
-        if (trainerId) {
-             const trainer = await User.findById(trainerId);
-             if (!trainer || trainer.role !== 'trainer') {
-                 return res.status(404).json({ message: 'Assigned trainer not found or is not a trainer.' });
-             }
-             batch.trainer = trainerId;
-        }
+        // 2. Format the response data
+        const formattedClasses = liveClasses.map(cls => ({
+            id: cls._id,
+            title: cls.title,
+            // Safely access trainer name
+            trainer: cls.trainer ? cls.trainer.name : 'N/A', 
+            // Format time range for display
+            time: `${cls.startTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} - ${cls.endTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+            zoomLink: cls.zoomLink
+        }));
 
-        batch.name = name || batch.name;
-        batch.timing = timing || batch.timing;
-        batch.course = course || batch.course;
-        
-        if (typeof isActive === 'boolean') {
-             batch.isActive = isActive;
-        }
-
-        const updatedBatch = await batch.save();
-        res.json(await updatedBatch.populate('trainer', 'name email'));
-
+        res.json(formattedClasses);
     } catch (error) {
-        console.error("Update batch error:", error);
-        res.status(500).json({ message: 'Server Error during batch update.' });
+        console.error("Get live classes list error:", error);
+        res.status(500).json({ message: 'Server Error: Failed to fetch live classes list.' });
+    }
+};
+
+exports.getStudentCompletedClasses = async (req, res) => {
+    // 🔥 FIX: use 'id' because route is /students/:id/...
+    const studentId = req.params.id;
+
+    // Query parameters for date filtering
+    const { startDate, endDate } = req.query; 
+
+    try {
+        const student = await User.findById(studentId);
+        if (!student || student.role !== 'student') {
+            return res.status(404).json({ message: 'Student not found.' });
+        }
+        
+        let query = {
+            _id: { $in: student.enrolledClasses },
+            status: 'completed'
+        };
+
+        if (startDate) {
+            query.startTime = { $gte: new Date(startDate) };
+        }
+        if (endDate) {
+            const endOfDay = new Date(endDate);
+            endOfDay.setHours(23, 59, 59, 999);
+            query.endTime = { 
+                ...(query.endTime || {}), 
+                $lte: endOfDay 
+            };
+        }
+        
+        const completedClasses = await Class.find(query)
+            .sort({ startTime: -1 })
+            .populate('trainer', 'name')
+            .populate('batchId', 'name course');
+
+        const studentCourse = student.course || 'N/A';
+
+        const formattedClasses = completedClasses.map(cls => {
+            const dateObj = new Date(cls.startTime);
+            const endTimeObj = new Date(cls.endTime);
+            const durationMs = endTimeObj.getTime() - dateObj.getTime();
+            const durationHours = (durationMs / (1000 * 60 * 60)).toFixed(2);
+            
+            return {
+                id: cls._id,
+                subject: studentCourse,
+                classTitle: cls.title,
+                topic: cls.title,
+                date: dateObj.toLocaleDateString('en-IN'),
+                time: `${dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} - ${endTimeObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+                day: dateObj.toLocaleDateString('en-IN', { weekday: 'long' }),
+                trainer: cls.trainer ? cls.trainer.name : 'N/A',
+                duration: `${durationHours} hrs`,
+                batchName: cls.batchId ? cls.batchId.name : 'Individual',
+                recordingUrl: cls.recordingUrl,
+            };
+        });
+
+        res.json(formattedClasses);
+    } catch (error) {
+        console.error("Error fetching student completed classes:", error);
+        res.status(500).json({ message: 'Server Error: Failed to fetch completed classes.' });
     }
 };

@@ -107,3 +107,52 @@ exports.loginUser = async (req, res) => {
         res.status(500).json({ message: 'Server error during login' });
     }
 };
+
+exports.resetPassword = async (req, res) => {
+    // ⚠️ Security check: Use the ID from the token (req.user.id) for the operation, 
+    // not the one from req.params.id, to prevent a user from resetting someone else's password.
+    const userId = req.user.id; 
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+        return res.status(400).json({ message: 'New password is required.' });
+    }
+    
+    // Optional: Add server-side strength validation to match frontend's logic
+    // (e.g., regex checks for complexity)
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            // Should not happen if `protect` middleware runs correctly
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // 1. Hash the new password
+        user.password = await hashPassword(newPassword);
+
+        // 2. Clear the temporary password flag (assuming you added one to userModel.js)
+        // **If your model doesn't have an `isTemporaryPassword` flag, you must add one to `userModel.js`**
+        user.isTemporaryPassword = false; 
+
+        await user.save();
+        
+        // Return a fresh token/user object to signify successful password update and bypass
+        // the reset screen on the next login.
+        res.status(200).json({
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            status: user.status,
+            isTemporaryPassword: false, // Explicitly false after reset
+            token: generateToken(user._id),
+            message: 'Password updated successfully.'
+        });
+
+    } catch (error) {
+        console.error("Password Reset Server Error:", error);
+        res.status(500).json({ message: 'Server Error during password reset.' });
+    }
+};

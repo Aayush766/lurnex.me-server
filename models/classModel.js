@@ -20,6 +20,23 @@ const classSchema = new mongoose.Schema({
         ref: 'User' 
     }],
     
+
+status: {
+        type: String,
+        enum: ['scheduled', 'completed', 'cancelled'],
+        default: 'scheduled'
+    },
+    cancellationReason: {
+        type: String,
+        default: null
+    },
+    cancelledBy: {
+        type: String,
+        enum: ['student', 'trainer', 'admin', null], // Tracks who initiated the cancellation
+        default: null
+    }
+    
 }, { timestamps: true });
+
 
 module.exports = mongoose.model('Class', classSchema);
