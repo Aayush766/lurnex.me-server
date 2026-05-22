@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { SitemapStream, streamToPromise } = require("sitemap");
-const Blog = require("../models/Blog");
+const Blog = require("../models/blogModel");
 
 router.get("/sitemap.xml", async (req, res) => {
   try {
