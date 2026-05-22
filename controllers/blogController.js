@@ -1,3 +1,4 @@
+const axios = require("axios");
 const Blog = require('../models/blogModel');
 const slugify = require('slugify');
 const gemini = require("../config/gemini");
@@ -51,7 +52,12 @@ const createBlog = async (req, res) => {
       author: req.user._id,
     });
 
-    res.status(201).json(blog);
+    // ✅ Notify Google sitemap updated
+await axios.get(
+  "https://www.google.com/ping?sitemap=https://lurnex.me/sitemap.xml"
+);
+
+res.status(201).json(blog);
 
   } catch (error) {
     res.status(500).json({

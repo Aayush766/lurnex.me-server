@@ -1,5 +1,3 @@
-// server.js
-
 require('dotenv').config();
 
 const express = require('express');
@@ -34,11 +32,16 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 
 app.use('/api/users', require('./routes/userRoutes'));
 
-
-// ✅ ADD THIS
 app.use('/api/blogs', require('./routes/blogRoutes'));
 
 app.use('/api/uploads', require('./routes/uploadRoutes'));
+
+
+// ✅ ADD THIS HERE
+const sitemapRoute = require("./routes/sitemap");
+
+app.use("/", sitemapRoute);
+
 
 // Health Check Route
 app.get('/', (req, res) => {
