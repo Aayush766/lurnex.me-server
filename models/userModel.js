@@ -33,6 +33,12 @@ const userSchema = new mongoose.Schema(
     course: { type: String },
     grade: { type: String },
     school: { type: String },
+    address: { type: String },
+    city: { type: String },
+    country: { type: String },
+
+    // Tracks which page/source the student registered from
+    registeredFrom: { type: String, default: 'Unknown' },
 
     // Trainer-specific info
     subject: { type: String }, // e.g. Math, Physics, etc.

@@ -4,12 +4,12 @@ const User = require('../models/userModel');
 const Class = require('../models/classModel');
 const Batch = require('../models/batchModel');
 const { createZoomMeeting } = require('../services/zoomService');
-const { sendLoginCredentials } = require('../services/emailService');
+const { sendLoginCredentials, sendNewStudentRegistrationAlert } = require('../services/emailService');
 const { addPasswordHistoryEntry } = require('../utils/passwordHistory');
 
 // Projection reused for student return
 const studentProjection =
-  '_id name email mobile course grade school status totalPaidHours hoursHistory batchId isOneOnOne';
+  '_id name email mobile course grade school status totalPaidHours hoursHistory batchId isOneOnOne country registeredFrom createdAt';
 
 // ================== DASHBOARD STATS ==================
 
@@ -76,6 +76,7 @@ exports.createStudentByAdmin = async (req, res) => {
       role: 'student',
       status: 'pending',
       isTemporaryPassword: true,
+      registeredFrom: 'Admin Dashboard',  // ← tracks page source
     });
 
     await addPasswordHistoryEntry(student, hashedPassword, {
@@ -88,8 +89,21 @@ exports.createStudentByAdmin = async (req, res) => {
       .select(studentProjection)
       .populate('batchId', 'name');
 
-    // Optionally send credentials by email
+    // Send credentials to the new student
     await sendLoginCredentials(email, tempPassword);
+
+    // ── Send admin alert email ──────────────────────────────────────────
+    sendNewStudentRegistrationAlert({
+      name:           student.name,
+      email:          student.email,
+      mobile:         student.mobile || 'N/A',
+      course:         student.course || 'N/A',
+      grade:          student.grade  || 'N/A',
+      country:        student.country || 'N/A',
+      enrolledOn:     student.createdAt,
+      registeredFrom: 'Admin Dashboard',
+    }).catch(err => console.error('[adminController] Alert email failed:', err.message));
+    // ───────────────────────────────────────────────────────────────────
 
     res.status(201).json(fresh);
   } catch (error) {

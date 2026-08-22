@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/userModel');
 const { addPasswordHistoryEntry } = require('../utils/passwordHistory');
+const { sendNewStudentRegistrationAlert } = require('../services/emailService');
 
 // Helper: generate JWT
 const generateToken = (id) => {
@@ -12,7 +13,7 @@ const generateToken = (id) => {
 // @desc   Register new student (public)
 // @route  POST /api/auth/register-student
 exports.registerStudent = async (req, res) => {
-  const { name, email, mobile, course, grade, school } = req.body;
+  const { name, email, mobile, course, grade, school, country } = req.body;
 
   if (!name || !email || !mobile || !course || !grade || !school) {
     return res.status(400).json({ message: 'Please include all required fields.' });
@@ -36,6 +37,7 @@ exports.registerStudent = async (req, res) => {
       course,
       grade,
       school,
+      country: country || 'N/A',
       password: hashedPassword,
       role: 'student',
       status: 'pending',
@@ -44,6 +46,7 @@ exports.registerStudent = async (req, res) => {
       hoursHistory: [],
       batchId: null,
       isOneOnOne: false,
+      registeredFrom: 'Public Registration Form',  // ← tracks page source
     });
 
     await addPasswordHistoryEntry(user, hashedPassword, {
@@ -51,6 +54,19 @@ exports.registerStudent = async (req, res) => {
       isTemporary: true,
     });
     await user.save();
+
+    // ── Send admin alert email ──────────────────────────────────────────
+    sendNewStudentRegistrationAlert({
+      name:             user.name,
+      email:            user.email,
+      mobile:           user.mobile,
+      course:           user.course,
+      grade:            user.grade,
+      country:          user.country || 'N/A',
+      enrolledOn:       user.createdAt,
+      registeredFrom:   'Public Registration Form',
+    }).catch(err => console.error('[authController] Alert email failed:', err.message));
+    // ───────────────────────────────────────────────────────────────────
 
     res.status(201).json({
       _id: user.id,

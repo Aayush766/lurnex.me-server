@@ -5,7 +5,7 @@ const { addPasswordHistoryEntry } = require('../utils/passwordHistory');
 
 // --- Helper function to ensure we only return necessary student data ---
 const studentProjection =
-  '_id name email mobile course grade school status totalPaidHours hoursHistory batchId isOneOnOne';
+  '_id name email mobile course grade school status totalPaidHours hoursHistory batchId isOneOnOne country registeredFrom createdAt';
 
 // @desc    Register a new student from the frontend registration flow
 // @route   POST /api/auth/register-student

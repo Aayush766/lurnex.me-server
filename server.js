@@ -1,56 +1,110 @@
+/**
+ * server.js – Lurnex API entry point
+ *
+ * Combines:
+ *   - Enterprise security (helmet, cors, morgan, global error handler)
+ *   - Full route registry (mis, auth, classes, assessments, admin,
+ *     users, blogs, uploads, sitemap)
+ *   - Mongoose connection with retry-safe timeouts
+ */
+
+'use strict';
+
 require('dotenv').config();
 
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
+const express    = require('express');
+const mongoose   = require('mongoose');
+const helmet     = require('helmet');
+const cors       = require('cors');
+const morgan     = require('morgan');
+
+// ─── Route imports ────────────────────────────────────────────────────────────
+
+const misRoutes        = require('./routes/misRoutes');
+const authRoutes       = require('./routes/authRoutes');
+const classRoutes      = require('./routes/classRoutes');
+const assessmentRoutes = require('./routes/assessmentRoutes');
+const adminRoutes      = require('./routes/adminRoutes');
+const userRoutes       = require('./routes/userRoutes');
+const blogRoutes       = require('./routes/blogRoutes');
+const uploadRoutes     = require('./routes/uploadRoutes');
+const sitemapRoute     = require('./routes/sitemap');
+
+// ─── App ──────────────────────────────────────────────────────────────────────
 
 const app = express();
 
+// ─── Security & parsing ───────────────────────────────────────────────────────
 
-// Middleware
-app.use(cors());
+app.use(helmet());
 
-app.use(express.json());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true }));
 
-// DB Connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log(err));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('combined'));
+}
 
+// ─── API Routes ───────────────────────────────────────────────────────────────
 
-// API Routes
-app.use('/api/mis', require('./routes/misRoutes'));
+app.use('/api/mis',         misRoutes);
+app.use('/api/auth',        authRoutes);
+app.use('/api/classes',     classRoutes);
+app.use('/api/assessments', assessmentRoutes);
+app.use('/api/admin',       adminRoutes);
+app.use('/api/users',       userRoutes);
+app.use('/api/blogs',       blogRoutes);
+app.use('/api/uploads',     uploadRoutes);
 
-app.use('/api/auth', require('./routes/authRoutes'));
+// Sitemap (mounted at root so /sitemap.xml resolves correctly)
+app.use('/', sitemapRoute);
 
-app.use('/api/classes', require('./routes/classRoutes'));
+// ─── Health check ─────────────────────────────────────────────────────────────
 
-app.use('/api/assessments', require('./routes/assessmentRoutes'));
+app.get('/api/health', (req, res) =>
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+);
 
-app.use('/api/admin', require('./routes/adminRoutes'));
+// ─── 404 ──────────────────────────────────────────────────────────────────────
 
-app.use('/api/users', require('./routes/userRoutes'));
+app.use((req, res) =>
+  res.status(404).json({ message: 'Route not found.' })
+);
 
-app.use('/api/blogs', require('./routes/blogRoutes'));
+// ─── Global error handler ─────────────────────────────────────────────────────
 
-app.use('/api/uploads', require('./routes/uploadRoutes'));
-
-
-// ✅ ADD THIS HERE
-const sitemapRoute = require("./routes/sitemap");
-
-app.use("/", sitemapRoute);
-
-
-// Health Check Route
-app.get('/', (req, res) => {
-  res.send('Lurnex API Running...');
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error('[server] Unhandled error:', err);
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error',
+  });
 });
 
+// ─── Database + Start ─────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+mongoose
+  .connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 10_000,
+    socketTimeoutMS: 45_000,
+  })
+  .then(() => {
+    console.info('[server] MongoDB connected');
+    app.listen(PORT, () =>
+      console.info(`[server] Listening on port ${PORT}`)
+    );
+  })
+  .catch((err) => {
+    console.error('[server] MongoDB connection failed:', err.message);
+    process.exit(1);
+  });
+
+module.exports = app;
