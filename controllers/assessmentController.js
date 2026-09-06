@@ -22,7 +22,7 @@ const { sendAssessmentBookingConfirmation, sendAdminLeadNotification, sendNewStu
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const CANDIDATE_FIELDS = ['name', 'grade', 'school', 'address', 'city', 'country', 'mobile', 'email', 'parentEmail', 'curriculum'];
+const CANDIDATE_FIELDS = ['name', 'grade', 'previousGrade', 'school', 'address', 'city', 'country', 'mobile', 'email', 'parentEmail', 'curriculum'];
 const JWT_EXPIRY_BUFFER_MINUTES = 30; // extra minutes added to assessment duration for token TTL
 const STRENGTH_THRESHOLD = 70;        // percentage ≥ this = strength
 const WEAKNESS_THRESHOLD = 60;        // percentage < this = focus area
@@ -124,26 +124,39 @@ exports.startPublicAssessment = async (req, res) => {
   );
 
   try {
-    // Find the most-recent published assessment that matches the candidate's grade
+    // Quizzes are assigned based on the candidate's PREVIOUS grade (the grade whose
+    // syllabus the student has already completed), not their current grade.
     const assessment = await Assessment.findOne({
       isPublished: true,
-      $or: [{ targetGrades: { $size: 0 } }, { targetGrades: candidate.grade }],
+      $or: [{ targetGrades: { $size: 0 } }, { targetGrades: candidate.previousGrade }],
     }).sort({ createdAt: -1 });
 
     if (!assessment || !assessment.questions.length) {
       return res.status(404).json({
-        message: 'No assessment is currently available for this grade. Please check back soon.',
+        message: 'No assessment is currently available for this previous grade. Please check back soon.',
       });
     }
 
-    // Upsert student record
-    let student = await User.findOne({ email: candidate.email });
+    // Upsert student record.
+    // Student email is now optional on the assessment form; when it's not
+    // provided we derive a stable internal identifier from the mobile number
+    // so we can still create/find a unique User record without requiring a
+    // real email address. The candidate's actual (possibly blank) email is
+    // still stored as-is in the attempt snapshot for admin/leads visibility.
+    const hasRealEmail = Boolean(candidate.email);
+    const mobileDigits = candidate.mobile.replace(/\D/g, '');
+    const lookupEmail = hasRealEmail
+      ? candidate.email
+      : `guest-${mobileDigits}@no-email.lurnex.me`;
+
+    let student = await User.findOne({ email: lookupEmail });
     let isNewStudent = false;
     if (!student) {
       isNewStudent = true;
       const password = await bcrypt.hash(crypto.randomBytes(24).toString('hex'), 10);
       student = await User.create({
         ...candidate,
+        email: lookupEmail,
         password,
         role: 'student',
         status: 'pending',
@@ -154,7 +167,7 @@ exports.startPublicAssessment = async (req, res) => {
       // ── Send admin alert email for new student from Assessment Page ──
       sendNewStudentRegistrationAlert({
         name:           student.name,
-        email:          student.email,
+        email:          candidate.email || 'Not provided',
         mobile:         student.mobile || candidate.mobile || 'N/A',
         course:         student.course || candidate.grade || 'N/A',
         grade:          student.grade  || candidate.grade || 'N/A',
@@ -472,6 +485,7 @@ exports.adminLeads = async (req, res) => {
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
     if (req.query.grade) filter['candidate.grade'] = req.query.grade;
+    if (req.query.previousGrade) filter['candidate.previousGrade'] = req.query.previousGrade;
     if (req.query.search) {
       const re = new RegExp(req.query.search, 'i');
       filter.$or = [{ 'candidate.name': re }, { 'candidate.email': re }, { 'candidate.school': re }];

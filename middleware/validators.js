@@ -26,20 +26,23 @@ exports.startAssessmentRules = [
     .trim().notEmpty().withMessage('Full name is required.')
     .isLength({ max: 100 }).withMessage('Name must be under 100 characters.'),
   body('email')
-    .trim().notEmpty().withMessage('Email address is required.')
-    .isEmail().withMessage('Please enter a valid email address.')
+    .optional({ checkFalsy: true })
+    .trim().isEmail().withMessage('Please enter a valid student email address.')
     .normalizeEmail(),
   body('mobile')
     .trim().notEmpty().withMessage('Mobile number is required.')
     .matches(/^[+\d\s\-()]{7,20}$/).withMessage('Please enter a valid mobile number.'),
   body('grade')
-    .trim().notEmpty().withMessage('Grade is required.')
-    .isIn(['1','2','3','4','5','6','7','8','9','10','11','12']).withMessage('Invalid grade.'),
+    .trim().notEmpty().withMessage('Current grade is required.')
+    .isIn(['5','6','7','8','9','10','11','12']).withMessage('Invalid grade. Grade must be between 5 and 12.'),
+  body('previousGrade')
+    .trim().notEmpty().withMessage('Previous grade is required.')
+    .isIn(['5','6','7','8','9','10','11','12']).withMessage('Invalid previous grade. Grade must be between 5 and 12.'),
   body('school').trim().notEmpty().withMessage('School name is required.').isLength({ max: 200 }),
   body('address').trim().notEmpty().withMessage('Address is required.').isLength({ max: 300 }),
   body('city').trim().notEmpty().withMessage('City is required.').isLength({ max: 100 }),
     body('country').trim().notEmpty().withMessage('Country is required.').isLength({ max: 100 }),
-    body('curriculum').trim().notEmpty().withMessage('Curriculum is required.').isLength({ max: 100 }),
+    body('curriculum').optional({ checkFalsy: true }).trim().isLength({ max: 100 }),
     body('parentEmail').trim().notEmpty().withMessage('Parent email is required.').isEmail().withMessage('Please enter a valid parent email address.').normalizeEmail(),
   ];
 

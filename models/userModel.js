@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema(
     mobile: { type: String },
     course: { type: String },
     grade: { type: String },
+    previousGrade: { type: String },
     school: { type: String },
     address: { type: String },
     city: { type: String },

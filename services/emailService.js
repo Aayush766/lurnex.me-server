@@ -370,6 +370,7 @@ Name:    ${candidate.name}
 Email:   ${candidate.email}
 Mobile:  ${candidate.mobile}
 Grade:   ${candidate.grade}
+Previous Grade: ${candidate.previousGrade || 'N/A'}
 School:  ${candidate.school}
 City:    ${candidate.city}, ${candidate.country}
 Score:   ${percentage}%

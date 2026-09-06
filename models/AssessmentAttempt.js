@@ -35,6 +35,7 @@ const assessmentAttemptSchema = new mongoose.Schema(
     candidate: {
       name: String,
       grade: String,
+      previousGrade: String,
       school: String,
       address: String,
       city: String,
@@ -83,6 +84,7 @@ const assessmentAttemptSchema = new mongoose.Schema(
 assessmentAttemptSchema.index({ student: 1, assessment: 1, status: 1 });
 // Index for admin lead queries
 assessmentAttemptSchema.index({ 'candidate.grade': 1, status: 1, createdAt: -1 });
+assessmentAttemptSchema.index({ 'candidate.previousGrade': 1, status: 1, createdAt: -1 });
 assessmentAttemptSchema.index({ 'candidate.email': 1 });
 
 module.exports = mongoose.model('AssessmentAttempt', assessmentAttemptSchema);
