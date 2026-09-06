@@ -20,7 +20,7 @@
 'use strict';
 
 const { Resend } = require('resend');
-const { generateResultPDF } = require('./pdfService');
+const { generateResultPDF } = require('./pdfservice');
 
 // ─── Resend client ────────────────────────────────────────────────────────────
 
