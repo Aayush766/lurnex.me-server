@@ -8,7 +8,7 @@
 // Make sure `node server.js` is running in ANOTHER terminal before
 // you run this script.
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://lurnex-me-server.onrender.com/api';
 
 // Use a random email each time so "user already exists" never blocks the test
 const randomId = Math.floor(Math.random() * 1000000);
