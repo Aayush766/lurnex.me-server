@@ -69,7 +69,11 @@ res.status(201).json(blog);
 // GET ALL BLOGS
 const getBlogs = async (req, res) => {
   try {
+<<<<<<< HEAD
     const blogs = await Blog.find({ status: 'published' })
+=======
+    const blogs = await Blog.find()
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       .populate('author', 'name email')
       .sort({ createdAt: -1 });
 
@@ -87,7 +91,10 @@ const getBlogBySlug = async (req, res) => {
   try {
     const blog = await Blog.findOne({
       slug: req.params.slug,
+<<<<<<< HEAD
       status: 'published',
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
     }).populate('author', 'name email'); // Tip: Added populate here too for complete UI visibility
 
     if (!blog) {
@@ -270,4 +277,8 @@ module.exports = {
   deleteBlog,
   updateBlog,
   generateAIBlog,
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86

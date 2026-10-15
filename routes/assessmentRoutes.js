@@ -14,7 +14,11 @@ const express = require('express');
 const router = express.Router();
 
 const ctrl = require('../controllers/assessmentController');
+<<<<<<< HEAD
 const { protect, admin, optionalLearner } = require('../middleware/authMiddleware');
+=======
+const { protect, adminOnly } = require('../middleware/authMiddleware'); // your existing auth
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 const {
   startAssessmentLimiter,
   publicAssessmentLimiter,
@@ -43,7 +47,10 @@ router.post(
   startAssessmentLimiter,
   startAssessmentRules,
   validate,
+<<<<<<< HEAD
   optionalLearner,
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
   ctrl.startPublicAssessment
 );
 
@@ -74,7 +81,11 @@ router.get('/public/my/attempts', ctrl.getCompletedAssessments);
 // ADMIN ROUTES  (requires auth + admin role)
 // ─────────────────────────────────────────────────────────────────────────────
 
+<<<<<<< HEAD
 router.use('/admin', adminLimiter, protect, admin);
+=======
+router.use('/admin', adminLimiter, protect);
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
 // Analytics dashboard
 router.get('/admin/analytics', ctrl.adminAnalytics);

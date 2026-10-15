@@ -15,12 +15,15 @@ const {
   createPurchaseRequest,
 } = require('../controllers/userController');
 const { addPasswordHistoryEntry } = require('../utils/passwordHistory');
+<<<<<<< HEAD
 const AssessmentAttempt = require('../models/AssessmentAttempt');
 const Class = require('../models/classModel');
 const Doubt = require('../models/DoubtModel');
 const { rateLimit } = require('express-rate-limit');
 const learnerReadLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false });
 const learnerProfileLimiter = rateLimit({ windowMs: 60 * 1000, max: 15, standardHeaders: true, legacyHeaders: false });
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
 // Helper: Projection to return consistent student data
 const studentProjection =
@@ -374,6 +377,7 @@ router.get('/students/:id/password-history', protect, admin, async (req, res) =>
 router.post('/register-student', registerStudent);
 
 router.post('/purchase-request', protect, createPurchaseRequest);
+<<<<<<< HEAD
 router.get('/me', protect, learnerReadLimiter, getMe);
 router.patch('/me', protect, learnerProfileLimiter, updateMe);
 router.get('/learner/dashboard', protect, learnerReadLimiter, async (req, res) => {
@@ -387,5 +391,9 @@ router.get('/learner/dashboard', protect, learnerReadLimiter, async (req, res) =
     return res.json({ activity: [...attempts.map(a => ({ type: 'assessment', title: a.assessment?.title || 'Assessment', status: a.status, score: a.percentage, at: a.submittedAt || a.startedAt })), ...classes.map(c => ({ type: 'class', title: c.title, status: c.status, at: c.startTime, recordingAvailable: !!c.recordingUrl }))].sort((a,b) => new Date(b.at || 0) - new Date(a.at || 0)), downloads: [], forumQuestions: questions.map(q => ({ id: String(q._id), question: q.question, status: q.status, createdAt: q.createdAt, updatedAt: q.updatedAt })) });
   } catch (error) { console.error('Learner dashboard error:', error); return res.status(500).json({ message: 'Could not load learner activity.' }); }
 });
+=======
+router.get('/me', protect, getMe);
+router.patch('/me', protect, updateMe);
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
 module.exports = router;

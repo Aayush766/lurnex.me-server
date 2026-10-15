@@ -1,6 +1,7 @@
 // models/userModel.js
 const mongoose = require('mongoose');
 
+<<<<<<< HEAD
 const leadSources = [
   'course_enrollment',
   'assessment_enrollment',
@@ -13,6 +14,8 @@ const leadSources = [
   'counselling_request',
 ];
 
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 const passwordHistorySchema = new mongoose.Schema(
   {
     passwordHash: { type: String, required: true },
@@ -26,6 +29,7 @@ const passwordHistorySchema = new mongoose.Schema(
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+<<<<<<< HEAD
     email: { type: String, required: true, lowercase: true, trim: true },
     password: { type: String, required: false, select: false },
     accountRegistration: { type: Boolean, default: false },
@@ -44,6 +48,10 @@ const userSchema = new mongoose.Schema(
     resetCodeHash: { type: String, select: false },
     resetCodeExpiresAt: { type: Date, select: false },
     resetAttempts: { type: Number, default: 0, select: false },
+=======
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
     role: { type: String, enum: ['student', 'trainer', 'admin'], default: 'student' },
 
@@ -68,6 +76,7 @@ const userSchema = new mongoose.Schema(
 
     // Tracks which page/source the student registered from
     registeredFrom: { type: String, default: 'Unknown' },
+<<<<<<< HEAD
     leadSource: { type: String, enum: leadSources },
     leadIntent: { type: String, trim: true },
     leadType: { type: String, enum: ['general', 'sat_masterclass'], default: 'general', index: true },
@@ -88,6 +97,8 @@ const userSchema = new mongoose.Schema(
     leadStatus: { type: String, enum: ['new', 'contacted', 'qualified', 'enrolled', 'closed', 'counselling_booked', 'not_interested'], default: 'new' },
     leadStatusHistory: [{ status: { type: String, required: true }, changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, changedAt: { type: Date, default: Date.now } }],
     leadNotes: [{ text: { type: String, required: true }, addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, addedAt: { type: Date, default: Date.now } }],
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
     // Trainer-specific info
     subject: { type: String }, // e.g. Math, Physics, etc.
@@ -155,9 +166,13 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+<<<<<<< HEAD
 // Leads and assessment guests may share an email with an account. Only learner
 // accounts need globally unique email addresses.
 userSchema.index({ email: 1 }, { unique: true, name: 'email_learner_unique', partialFilterExpression: { accountRegistration: true } });
 
 module.exports = mongoose.model('User', userSchema);
 module.exports.leadSources = leadSources;
+=======
+module.exports = mongoose.model('User', userSchema);
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86

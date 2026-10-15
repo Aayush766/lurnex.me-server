@@ -6,12 +6,18 @@ const Batch = require('../models/batchModel');
 const { createZoomMeeting } = require('../services/zoomService');
 const { sendLoginCredentials, sendNewStudentRegistrationAlert } = require('../services/emailService');
 const { addPasswordHistoryEntry } = require('../utils/passwordHistory');
+<<<<<<< HEAD
 const AuditLog = require('../models/AuditLog');
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
 // Projection reused for student return
 const studentProjection =
   '_id name email mobile course grade school status totalPaidHours hoursHistory batchId isOneOnOne country registeredFrom createdAt';
+<<<<<<< HEAD
 const isLeadRecord = (student) => student.isLead || student.registeredFrom === 'Public Registration Form' || (!student.registeredFrom && student.isTemporaryPassword);
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
 // ================== DASHBOARD STATS ==================
 
@@ -41,7 +47,11 @@ exports.getDashboardStats = async (req, res) => {
 // @route  GET /api/admin/students
 exports.getAllStudents = async (req, res) => {
   try {
+<<<<<<< HEAD
     const students = await User.find({ role: 'student', accountRegistration: { $ne: true }, $nor: [{ isLead: true }, { registeredFrom: 'Public Registration Form' }, { password: { $exists: false } }, { isTemporaryPassword: true, registeredFrom: { $exists: false } }] })
+=======
+    const students = await User.find({ role: 'student' })
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       .select(studentProjection)
       .populate('batchId', 'name');
     res.json(students);
@@ -122,7 +132,11 @@ exports.getStudent = async (req, res) => {
       .select(studentProjection)
       .populate('batchId', 'name');
 
+<<<<<<< HEAD
     if (!student || student.role !== 'student' || student.accountRegistration || student.isLead) {
+=======
+    if (!student || student.role !== 'student') {
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       return res.status(404).json({ message: 'Student not found.' });
     }
 
@@ -142,7 +156,11 @@ exports.updateStudentDetails = async (req, res) => {
   try {
     const student = await User.findById(studentId);
 
+<<<<<<< HEAD
     if (!student || student.role !== 'student' || student.accountRegistration || student.isLead) {
+=======
+    if (!student || student.role !== 'student') {
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       return res.status(404).json({ message: 'Student not found.' });
     }
 
@@ -163,8 +181,11 @@ exports.updateStudentDetails = async (req, res) => {
       parseFloat(totalPaidHours) >= 0 ? parseFloat(totalPaidHours) : student.totalPaidHours;
 
     const updatedStudent = await student.save();
+<<<<<<< HEAD
     const changedFields = ['name','email','mobile','course','grade','school','totalPaidHours'].filter((field) => req.body[field] !== undefined);
     if (changedFields.length) await AuditLog.create({ actor: req.user._id, target: student._id, action: 'student.profile_updated_by_admin', details: { fields: changedFields }, ip: req.ip });
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
     const fresh = await User.findById(updatedStudent._id)
       .select(studentProjection)
       .populate('batchId', 'name');
@@ -192,7 +213,11 @@ exports.addExtraHours = async (req, res) => {
   try {
     const student = await User.findById(studentId);
 
+<<<<<<< HEAD
     if (!student || student.role !== 'student' || student.accountRegistration || student.isLead) {
+=======
+    if (!student || student.role !== 'student') {
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       return res.status(404).json({ message: 'Student not found.' });
     }
 
@@ -207,7 +232,10 @@ exports.addExtraHours = async (req, res) => {
     student.hoursHistory.push(transaction);
 
     const updatedStudent = await student.save();
+<<<<<<< HEAD
     await AuditLog.create({ actor: req.user._id, target: student._id, action: 'student.hours_added_by_admin', details: { hours: hoursToAdd }, ip: req.ip });
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
     const fresh = await User.findById(updatedStudent._id)
       .select(studentProjection)
       .populate('batchId', 'name');
@@ -232,7 +260,11 @@ exports.transferStudent = async (req, res) => {
   try {
     const student = await User.findById(studentId);
 
+<<<<<<< HEAD
     if (!student || student.role !== 'student' || student.accountRegistration || student.isLead) {
+=======
+    if (!student || student.role !== 'student') {
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       return res.status(404).json({ message: 'Student not found.' });
     }
 
@@ -264,8 +296,11 @@ exports.transferStudent = async (req, res) => {
       return res.status(500).json({ message: 'Failed to update student assignment.' });
     }
 
+<<<<<<< HEAD
     await AuditLog.create({ actor: req.user._id, target: student._id, action: 'student.assignment_updated_by_admin', details: { isOneOnOne: !!isOneOnOne, batchId: batchId || null }, ip: req.ip });
 
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
     res.json({ message: 'Student assignment updated successfully.', student: updatedStudent });
   } catch (error) {
     console.error('Transfer Student Error:', error);
@@ -278,7 +313,11 @@ exports.transferStudent = async (req, res) => {
 exports.updateStudentStatus = async (req, res) => {
   try {
     const student = await User.findById(req.params.id);
+<<<<<<< HEAD
     if (!student || student.role !== 'student' || student.accountRegistration || student.isLead) {
+=======
+    if (!student || student.role !== 'student') {
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       return res.status(404).json({ message: 'Student not found' });
     }
 
@@ -303,7 +342,10 @@ exports.updateStudentStatus = async (req, res) => {
     }
 
     const updatedStudent = await student.save();
+<<<<<<< HEAD
     await AuditLog.create({ actor: req.user._id, target: student._id, action: 'student.status_updated_by_admin', details: { previousStatus: oldStatus, status: student.status }, ip: req.ip });
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
     const fresh = await User.findById(updatedStudent._id)
       .select(studentProjection)
       .populate('batchId', 'name');
@@ -330,7 +372,11 @@ exports.adminChangeStudentPassword = async (req, res) => {
   try {
     const student = await User.findById(studentId);
 
+<<<<<<< HEAD
     if (!student || student.role !== 'student' || student.accountRegistration || student.isLead) {
+=======
+    if (!student || student.role !== 'student') {
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       return res.status(404).json({ message: 'Student not found.' });
     }
 
@@ -346,7 +392,10 @@ exports.adminChangeStudentPassword = async (req, res) => {
     });
 
     await student.save();
+<<<<<<< HEAD
     await AuditLog.create({ actor: req.user._id, target: student._id, action: 'student.password_changed_by_admin', details: { isTemporary: !!isTemporary }, ip: req.ip });
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
     // IMPORTANT: newPassword only sent in response ONCE; not stored as plaintext.
     res.json({
@@ -1108,4 +1157,8 @@ exports.adminChangeStudentPassword = async (req, res) => {
     console.error('Admin change student password error:', error);
     res.status(500).json({ message: 'Server Error: Failed to change password.' });
   }
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86

@@ -4,6 +4,7 @@
  * Unified email service for Lurnex LMS.
  * Uses Resend (HTTPS-based) — works on Render free tier.
  *
+<<<<<<< HEAD
  * Color theme sourced from the Lurnex landing page:
  *   GRADIENT_START  #1a9ed4  — sky blue (top of hero)
  *   GRADIENT_END    #0fb4a8  — teal (bottom of hero)
@@ -15,6 +16,8 @@
  *   AMBER_LIGHT     #fff8e1  — focus-area cell tint (unchanged)
  *   AMBER_MID       #fcd34d  — focus-area border  (unchanged)
  *
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
  * sendLoginCredentials          – sends temporary password to new students
  * sendAssessmentResult          – branded HTML + PDF attachment
  * sendAdminLeadNotification     – internal lead alert
@@ -37,11 +40,16 @@ const { generateResultPDF } = require('./pdfservice');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+<<<<<<< HEAD
+=======
+// Sender address – must be a verified domain/email in your Resend dashboard
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 const FROM_ADDRESS = process.env.EMAIL_FROM || 'noreply@lurnex.me';
 const FROM_NAME_DEFAULT = 'Lurnex LMS';
 
 const from = (name = FROM_NAME_DEFAULT) => `"${name}" <${FROM_ADDRESS}>`;
 
+<<<<<<< HEAD
 exports.sendLearnerAccountCode = async (email, code, purpose) => {
   const verification = purpose === 'verify';
   return send({
@@ -78,6 +86,9 @@ const T = {
 const heroGrad = `linear-gradient(150deg, ${T.gradStart} 0%, ${T.gradEnd} 100%)`;
 
 // ─── Helper: send ─────────────────────────────────────────────────────────────
+=======
+// ─── Helper: send with error swallowing ───────────────────────────────────────
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
 async function send({ from: fromField, to, subject, html, text, attachments }) {
   try {
@@ -96,6 +107,7 @@ async function send({ from: fromField, to, subject, html, text, attachments }) {
   }
 }
 
+<<<<<<< HEAD
 // ─── Shared HTML components ───────────────────────────────────────────────────
 
 const emailHeader = (subtitle = '') => `
@@ -175,12 +187,19 @@ ${inner}
 
 const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, strengths, weaknesses, submittedAt }) => {
   const perfColor = percentage >= 70 ? T.teal : percentage >= 50 ? T.warn : T.danger;
+=======
+// ─── HTML email template (assessment result) ──────────────────────────────────
+
+const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, strengths, weaknesses, submittedAt }) => {
+  const perfColor = percentage >= 70 ? '#059669' : percentage >= 50 ? '#d97706' : '#e11d48';
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
   const perfLabel = percentage >= 70 ? 'Strong Performance' : percentage >= 50 ? 'Satisfactory' : 'Needs Improvement';
   const date = new Date(submittedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 
   const insightList = (items) =>
     items.length
       ? items.map(i => `<li style="margin:6px 0;color:#334155;">• ${i}</li>`).join('')
+<<<<<<< HEAD
       : `<li style="color:${T.muted};font-style:italic;">None identified</li>`;
 
   return htmlShell(`
@@ -199,12 +218,39 @@ const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, stren
           <div style="background:${T.gradEnd};border-radius:10px;padding:8px 16px;display:inline-block;text-align:center;">
             <div style="color:${T.white};font-size:26px;font-weight:900;line-height:1;">${percentage}%</div>
             <div style="color:rgba(255,255,255,0.8);font-size:9px;font-weight:700;margin-top:3px;">${score}/${totalMarks} CORRECT</div>
+=======
+      : `<li style="color:#94a3b8;font-style:italic;">None identified</li>`;
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 0;">
+<tr><td align="center">
+<table width="620" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+  <!-- HEADER -->
+  <tr>
+    <td style="background:#0a192f;padding:28px 36px;">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td>
+          <span style="color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.5px;">LURNEX</span><br>
+          <span style="color:#64748b;font-size:11px;">Learn better. Grow ahead. Excel always.</span>
+        </td>
+        <td align="right">
+          <div style="background:#059669;border-radius:12px;padding:12px 20px;display:inline-block;text-align:center;">
+            <div style="color:#ffffff;font-size:32px;font-weight:800;line-height:1;">${percentage}%</div>
+            <div style="color:#a7f3d0;font-size:10px;font-weight:600;margin-top:4px;">${score}/${totalMarks} CORRECT</div>
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
           </div>
         </td>
       </tr></table>
     </td>
   </tr>
 
+<<<<<<< HEAD
   <!-- GREETING -->
   <tr>
     <td style="padding:32px 40px 0;">
@@ -212,14 +258,35 @@ const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, stren
       <p style="margin:0;color:${T.slate};font-size:14px;">
         Here is your complete assessment report for <strong>${assessmentTitle}</strong>, completed on ${date}.
       </p>
+=======
+  <!-- SUB-HEADER -->
+  <tr>
+    <td style="background:#059669;padding:14px 36px;">
+      <span style="color:#ffffff;font-size:13px;font-weight:700;">Diagnostic Performance Report</span>
+      <span style="color:#a7f3d0;font-size:12px;"> · ${assessmentTitle}</span>
+    </td>
+  </tr>
+
+  <!-- GREETING -->
+  <tr>
+    <td style="padding:32px 36px 0;">
+      <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#0f172a;">Great work, ${name}! 🎉</h1>
+      <p style="margin:0;color:#64748b;font-size:14px;">Here is your complete assessment report for <strong>${assessmentTitle}</strong>, completed on ${date}.</p>
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
     </td>
   </tr>
 
   <!-- SCORE BAND -->
   <tr>
+<<<<<<< HEAD
     <td style="padding:24px 40px 0;">
       <div style="background:${perfColor};border-radius:12px;padding:18px 24px;">
         <span style="color:${T.white};font-size:16px;font-weight:800;">${perfLabel}</span>
+=======
+    <td style="padding:24px 36px 0;">
+      <div style="background:${perfColor};border-radius:12px;padding:18px 24px;">
+        <span style="color:#ffffff;font-size:16px;font-weight:800;">${perfLabel}</span>
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
         <p style="color:rgba(255,255,255,0.85);font-size:13px;margin:6px 0 0;">
           You scored <strong>${percentage}%</strong> — ${score} out of ${totalMarks} questions correct.
         </p>
@@ -229,6 +296,7 @@ const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, stren
 
   <!-- STRENGTHS & FOCUS AREAS -->
   <tr>
+<<<<<<< HEAD
     <td style="padding:24px 40px 0;">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
         <td width="48%" style="background:${T.tealLight};border-radius:12px;padding:16px;border:1px solid ${T.border};vertical-align:top;">
@@ -238,6 +306,17 @@ const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, stren
         <td width="4%"></td>
         <td width="48%" style="background:${T.amber};border-radius:12px;padding:16px;border:1px solid ${T.amberBorder};vertical-align:top;">
           <div style="color:${T.warn};font-size:11px;font-weight:800;letter-spacing:1px;margin-bottom:10px;">⚡ FOCUS AREAS</div>
+=======
+    <td style="padding:24px 36px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td width="48%" style="background:#ecfdf5;border-radius:12px;padding:16px;border:1px solid #a7f3d0;vertical-align:top;">
+          <div style="color:#059669;font-size:11px;font-weight:800;letter-spacing:1px;margin-bottom:10px;">✦ YOUR STRENGTHS</div>
+          <ul style="margin:0;padding:0;list-style:none;font-size:13px;">${insightList(strengths)}</ul>
+        </td>
+        <td width="4%"></td>
+        <td width="48%" style="background:#fffbeb;border-radius:12px;padding:16px;border:1px solid #fcd34d;vertical-align:top;">
+          <div style="color:#d97706;font-size:11px;font-weight:800;letter-spacing:1px;margin-bottom:10px;">⚡ FOCUS AREAS</div>
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
           <ul style="margin:0;padding:0;list-style:none;font-size:13px;">${insightList(weaknesses)}</ul>
         </td>
       </tr></table>
@@ -246,6 +325,7 @@ const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, stren
 
   <!-- PDF NOTE -->
   <tr>
+<<<<<<< HEAD
     <td style="padding:24px 40px 0;">
       <table width="100%" cellpadding="0" cellspacing="0"
              style="background:${T.surface};border-radius:12px;border:1px solid ${T.border};">
@@ -256,6 +336,15 @@ const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, stren
             <div style="color:${T.muted};font-size:12px;margin-top:3px;">
               A detailed PDF with subject-wise breakdown and answer review is attached to this email.
             </div>
+=======
+    <td style="padding:24px 36px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
+        <tr>
+          <td style="padding:16px 20px;width:40px;font-size:24px;">📄</td>
+          <td style="padding:16px 20px 16px 0;">
+            <div style="font-weight:700;color:#0f172a;font-size:13px;">Your full report is attached</div>
+            <div style="color:#64748b;font-size:12px;margin-top:3px;">A detailed PDF with subject-wise breakdown and answer review is attached to this email.</div>
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
           </td>
         </tr>
       </table>
@@ -264,18 +353,28 @@ const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, stren
 
   <!-- NEXT STEPS -->
   <tr>
+<<<<<<< HEAD
     <td style="padding:24px 40px 0;">
       <div style="background:${heroGrad};border-radius:12px;padding:22px 28px;">
         <div style="color:${T.white};font-size:14px;font-weight:800;margin-bottom:8px;">What happens next?</div>
         <p style="color:rgba(255,255,255,0.85);font-size:13px;margin:0;line-height:1.6;">
           A Lurnex academic counsellor will review your results and reach out within
           <strong style="color:${T.white};">24 hours</strong> to discuss a personalised 1:1 learning plan
+=======
+    <td style="padding:24px 36px 0;">
+      <div style="background:#0a192f;border-radius:12px;padding:20px 24px;">
+        <div style="color:#ffffff;font-size:14px;font-weight:800;margin-bottom:8px;">What happens next?</div>
+        <p style="color:#94a3b8;font-size:13px;margin:0;line-height:1.6;">
+          A Lurnex academic counsellor will review your results and reach out within
+          <strong style="color:#6ee7b7;">24 hours</strong> to discuss a personalised 1:1 learning plan
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
           tailored to your strengths and focus areas.
         </p>
       </div>
     </td>
   </tr>
 
+<<<<<<< HEAD
   ${contactRow()}
 
   <!-- SPACER -->
@@ -283,6 +382,34 @@ const buildHtml = ({ name, assessmentTitle, percentage, score, totalMarks, stren
 
   ${emailFooter()}
 `);
+=======
+  <!-- CONTACT -->
+  <tr>
+    <td style="padding:24px 36px;">
+      <p style="margin:0;font-size:12px;color:#94a3b8;">
+        Questions? Reach us at
+        <a href="mailto:support@lurnex.me" style="color:#059669;text-decoration:none;font-weight:700;">support@lurnex.me</a>
+        or call <a href="tel:+919990054003" style="color:#059669;text-decoration:none;font-weight:700;">+91-9990-054-003</a>
+      </p>
+    </td>
+  </tr>
+
+  <!-- FOOTER -->
+  <tr>
+    <td style="background:#0a192f;padding:16px 36px;border-top:1px solid #1e293b;">
+      <p style="margin:0;color:#475569;font-size:11px;text-align:center;">
+        © ${new Date().getFullYear()} Lurnex. All rights reserved.<br>
+        This email was sent to ${name} because they completed an assessment on the Lurnex platform.
+      </p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 };
 
 // ─── Plain-text fallback ──────────────────────────────────────────────────────
@@ -312,6 +439,7 @@ Need help? Email us at support@lurnex.me or call +91-9990-054-003.
 
 /**
  * Sends login credentials to a newly activated student.
+<<<<<<< HEAD
  */
 exports.sendLoginCredentials = async (studentEmail, temporaryPassword) => {
   const html = htmlShell(`
@@ -347,6 +475,71 @@ exports.sendLoginCredentials = async (studentEmail, temporaryPassword) => {
   <tr><td style="height:24px;"></td></tr>
   ${emailFooter()}
 `);
+=======
+ *
+ * @param {string} studentEmail      Recipient email address
+ * @param {string} temporaryPassword Plain-text temporary password
+ */
+exports.sendLoginCredentials = async (studentEmail, temporaryPassword) => {
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head><meta charset="UTF-8"></head>
+    <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 0;">
+      <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#0a192f;padding:24px 36px;">
+            <span style="color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.5px;">LURNEX</span><br>
+            <span style="color:#64748b;font-size:11px;">Learn better. Grow ahead. Excel always.</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px 36px 0;">
+            <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;">Welcome to the Platform! 🎉</h1>
+            <p style="color:#64748b;font-size:14px;margin:0;">Your account has been activated. Use the credentials below to log in.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 36px 0;">
+            <div style="background:#f8fafc;border-radius:12px;padding:20px 24px;border:1px solid #e2e8f0;">
+              <p style="margin:0 0 10px;font-size:13px;color:#64748b;font-weight:600;">YOUR LOGIN DETAILS</p>
+              <p style="margin:0 0 6px;font-size:14px;color:#0f172a;"><strong>Email:</strong> ${studentEmail}</p>
+              <p style="margin:0;font-size:14px;color:#0f172a;"><strong>Temporary Password:</strong> <code style="background:#e2e8f0;padding:2px 8px;border-radius:4px;">${temporaryPassword}</code></p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 36px 0;">
+            <div style="background:#fffbeb;border-radius:12px;padding:14px 20px;border:1px solid #fcd34d;">
+              <p style="margin:0;font-size:13px;color:#92400e;">⚠️ Please change your password immediately after your first login.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 36px;">
+            <p style="margin:0;font-size:12px;color:#94a3b8;">
+              Need help? Contact us at
+              <a href="mailto:support@lurnex.me" style="color:#059669;text-decoration:none;font-weight:700;">support@lurnex.me</a>
+              or call <a href="tel:+919990054003" style="color:#059669;text-decoration:none;font-weight:700;">+91-9990-054-003</a>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#0a192f;padding:16px 36px;border-top:1px solid #1e293b;">
+            <p style="margin:0;color:#475569;font-size:11px;text-align:center;">
+              © ${new Date().getFullYear()} Lurnex. All rights reserved.
+            </p>
+          </td>
+        </tr>
+      </table>
+      </td></tr>
+      </table>
+    </body>
+    </html>
+  `;
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
   await send({
     from: from('Lurnex LMS'),
@@ -359,6 +552,23 @@ exports.sendLoginCredentials = async (studentEmail, temporaryPassword) => {
 
 /**
  * Sends the assessment result email with branded HTML and a PDF report attached.
+<<<<<<< HEAD
+=======
+ *
+ * @param {Object} params
+ * @param {string} params.to
+ * @param {string} params.name
+ * @param {string} [params.grade]
+ * @param {string} [params.school]
+ * @param {string} params.assessmentTitle
+ * @param {number} params.percentage
+ * @param {number} params.score
+ * @param {number} params.totalMarks
+ * @param {Array}  [params.subjectAnalysis]
+ * @param {Array}  [params.strengths]
+ * @param {Array}  [params.weaknesses]
+ * @param {Date}   [params.submittedAt]
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
  */
 exports.sendAssessmentResult = async (params) => {
   const {
@@ -401,6 +611,12 @@ exports.sendAssessmentResult = async (params) => {
 
 /**
  * Sends an internal admin notification when a new lead submits an assessment.
+<<<<<<< HEAD
+=======
+ *
+ * @param {Object} candidate  Candidate snapshot
+ * @param {number} percentage Score percentage
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
  */
 exports.sendAdminLeadNotification = async (candidate, percentage) => {
   const adminEmail = process.env.ADMIN_EMAIL || process.env.ADMIN_NOTIFY_EMAIL;
@@ -430,6 +646,19 @@ Log in to the Lurnex admin dashboard to review this lead.
 
 /**
  * Sends a rich HTML admin alert whenever any new student registers.
+<<<<<<< HEAD
+=======
+ *
+ * @param {Object} params
+ * @param {string} params.name
+ * @param {string} params.email
+ * @param {string} [params.mobile]
+ * @param {string} [params.course]
+ * @param {string} [params.grade]
+ * @param {string} [params.country]
+ * @param {string} [params.enrolledOn]
+ * @param {string} [params.registeredFrom]
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
  */
 exports.sendNewStudentRegistrationAlert = async (params) => {
   const adminEmail =
@@ -457,6 +686,7 @@ exports.sendNewStudentRegistrationAlert = async (params) => {
     ? new Date(enrolledOn).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+<<<<<<< HEAD
   // Source badge: keep semantic meaning, swap to landing-page palette
   const sourceBadgeColor =
     registeredFrom === 'Assessment Page'          ? T.teal    :
@@ -512,6 +742,70 @@ exports.sendNewStudentRegistrationAlert = async (params) => {
   <tr><td style="height:24px;"></td></tr>
   ${emailFooter()}
 `);
+=======
+  const sourceBadgeColor =
+    registeredFrom === 'Assessment Page'          ? '#7c3aed' :
+    registeredFrom === 'Admin Dashboard'          ? '#0284c7' :
+    registeredFrom === 'Public Registration Form' ? '#059669' :
+                                                    '#64748b';
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 0;">
+<tr><td align="center">
+<table width="640" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+  <tr>
+    <td style="background:#0a192f;padding:28px 36px;">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td><span style="color:#ffffff;font-size:22px;font-weight:800;">LURNEX</span><br>
+          <span style="color:#64748b;font-size:11px;">Admin Notification System</span></td>
+        <td align="right"><div style="background:#059669;border-radius:50%;width:50px;height:50px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;">🎓</div></td>
+      </tr></table>
+    </td>
+  </tr>
+  <tr><td style="background:#059669;padding:14px 36px;">
+    <span style="color:#ffffff;font-size:14px;font-weight:700;">🔔 New Student Registration Alert</span>
+  </td></tr>
+  <tr><td style="padding:28px 36px 0;">
+    <h2 style="margin:0 0 6px;font-size:20px;font-weight:800;color:#0f172a;">A new student just registered!</h2>
+    <p style="margin:0;color:#64748b;font-size:14px;">Received on <strong>${enrolledDate}</strong>.</p>
+    <div style="margin-top:14px;">
+      <span style="background:${sourceBadgeColor};color:#ffffff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;">📍 ${registeredFrom}</span>
+    </div>
+  </td></tr>
+  <tr><td style="padding:24px 36px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
+      <tr style="background:#0a192f;">
+        <th style="padding:12px 16px;text-align:left;color:#94a3b8;font-size:11px;width:35%;">FIELD</th>
+        <th style="padding:12px 16px;text-align:left;color:#94a3b8;font-size:11px;">DETAILS</th>
+      </tr>
+      <tr style="background:#f8fafc;"><td style="padding:14px 16px;font-size:13px;font-weight:600;color:#475569;border-bottom:1px solid #e2e8f0;">👤 Name</td><td style="padding:14px 16px;font-size:14px;font-weight:700;color:#0f172a;border-bottom:1px solid #e2e8f0;">${name}</td></tr>
+      <tr style="background:#ffffff;"><td style="padding:14px 16px;font-size:13px;font-weight:600;color:#475569;border-bottom:1px solid #e2e8f0;">📧 Email</td><td style="padding:14px 16px;font-size:14px;border-bottom:1px solid #e2e8f0;"><a href="mailto:${email}" style="color:#059669;text-decoration:none;font-weight:600;">${email}</a></td></tr>
+      <tr style="background:#f8fafc;"><td style="padding:14px 16px;font-size:13px;font-weight:600;color:#475569;border-bottom:1px solid #e2e8f0;">📱 Mobile</td><td style="padding:14px 16px;font-size:14px;color:#0f172a;border-bottom:1px solid #e2e8f0;">${mobile}</td></tr>
+      <tr style="background:#ffffff;"><td style="padding:14px 16px;font-size:13px;font-weight:600;color:#475569;border-bottom:1px solid #e2e8f0;">📚 Course</td><td style="padding:14px 16px;font-size:14px;color:#0f172a;border-bottom:1px solid #e2e8f0;">${course}</td></tr>
+      <tr style="background:#f8fafc;"><td style="padding:14px 16px;font-size:13px;font-weight:600;color:#475569;border-bottom:1px solid #e2e8f0;">🎯 Grade</td><td style="padding:14px 16px;font-size:14px;color:#0f172a;border-bottom:1px solid #e2e8f0;">${grade}</td></tr>
+      <tr style="background:#ffffff;"><td style="padding:14px 16px;font-size:13px;font-weight:600;color:#475569;border-bottom:1px solid #e2e8f0;">🌍 Country</td><td style="padding:14px 16px;font-size:14px;color:#0f172a;border-bottom:1px solid #e2e8f0;">${country}</td></tr>
+      <tr style="background:#f8fafc;"><td style="padding:14px 16px;font-size:13px;font-weight:600;color:#475569;">📅 Enrolled On</td><td style="padding:14px 16px;font-size:14px;color:#0f172a;">${enrolledDate}</td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:24px 36px 0;">
+    <div style="background:#0a192f;border-radius:12px;padding:20px 24px;text-align:center;">
+      <p style="color:#94a3b8;font-size:13px;margin:0 0 14px;">Log in to the Lurnex Admin Dashboard to review this student.</p>
+      <a href="https://admin.lurnex.me" style="background:#059669;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:13px;font-weight:700;display:inline-block;">Open Admin Dashboard →</a>
+    </div>
+  </td></tr>
+  <tr><td style="padding:24px 36px;">
+    <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center;">Automated notification · © ${new Date().getFullYear()} Lurnex. All rights reserved.</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
   await send({
     from: from('Lurnex Admin Alert'),
@@ -529,6 +823,7 @@ exports.sendAssessmentBookingConfirmation = async ({ studentEmail, parentEmail, 
   const recipients = [...new Set([studentEmail, parentEmail].filter(Boolean))];
   if (!recipients.length) return;
 
+<<<<<<< HEAD
   const slotDate = new Date(preferredSlot).toLocaleDateString('en-IN', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata',
   });
@@ -643,12 +938,35 @@ exports.sendAssessmentBookingConfirmation = async ({ studentEmail, parentEmail, 
   <tr><td style="height:24px;"></td></tr>
   ${emailFooter()}
 `);
+=======
+  const slot = new Date(preferredSlot).toLocaleString('en-IN', {
+    dateStyle: 'full', timeStyle: 'short', timeZone: 'Asia/Kolkata',
+  });
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:28px;color:#0f172a">
+      <div style="background:#0a192f;color:#fff;padding:22px 28px;border-radius:14px 14px 0 0"><strong style="font-size:22px">LURNEX</strong></div>
+      <div style="border:1px solid #e2e8f0;padding:28px;border-radius:0 0 14px 14px">
+        <h1 style="margin-top:0">Thank you, ${name}!</h1>
+        <p>Your ${assessmentTitle || 'assessment'} has been submitted successfully.</p>
+        <p>Your preferred slot for the result discussion is:</p>
+        <p style="background:#ecfdf5;border:1px solid #a7f3d0;padding:14px;border-radius:10px;font-weight:bold;color:#047857">${slot} (IST)</p>
+        <p>Our academic counsellor will review the request and contact you to confirm the discussion.</p>
+      </div>
+    </div>`;
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
   await send({
     from: from('Lurnex Academic Platform'),
     to: recipients,
+<<<<<<< HEAD
     subject: `🎯 Your Lurnex Assessment Has Been Submitted`,
     html,
     text: `Thank you, ${name}.\n\nYour ${assessmentTitle || 'assessment'} has been submitted successfully.\n\nWHAT HAPPENS NOW?\n\n01 — We Review\nOur academic team carefully reviews the student's responses.\n\n02 — We Analyse\nWe identify strengths, conceptual gaps and areas requiring attention.\n\n03 — We Prepare\nWe prepare personalised recommendations based on the student's performance.\n\n04 — We Discuss\nOur academic counsellor will walk you through the results in detail.\n\nPREFERRED DISCUSSION\n📅 ${slotDate}\n🕐 ${slotTime} IST\n\nOur academic counsellor will contact you to confirm your preferred time.\n\nNeed help? Email support@lurnex.me or call +91-9990-054-003.\n\nLurnex — LEARN · GROW · EXCEL\n© ${new Date().getFullYear()} Lurnex. All rights reserved.`,
+=======
+    subject: 'Thank you – your result discussion slot preference',
+    html,
+    text: `Thank you, ${name}. Your ${assessmentTitle || 'assessment'} has been submitted. Your preferred result discussion slot is ${slot} (IST). A Lurnex counsellor will contact you to confirm it.`,
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
   });
 };

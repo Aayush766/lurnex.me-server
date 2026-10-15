@@ -2,7 +2,10 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
+<<<<<<< HEAD
 const connectDatabase = require('./config/connectDatabase');
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
 // Import your User model
 const User = require('./models/userModel');
@@ -13,7 +16,11 @@ dotenv.config();
 const createAdminUser = async () => {
     try {
         // 1. Connect to MongoDB
+<<<<<<< HEAD
         await connectDatabase();
+=======
+        await mongoose.connect(process.env.MONGO_URI);
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
         console.log('MongoDB Connected...');
 
         // 2. Define the admin's data
@@ -58,4 +65,8 @@ const createAdminUser = async () => {
 };
 
 // Run the function
+<<<<<<< HEAD
 createAdminUser();
+=======
+createAdminUser();
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86

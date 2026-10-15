@@ -36,11 +36,14 @@ const {
   updateBatch,
   getLiveClassesList,
 } = require('../controllers/adminController');
+<<<<<<< HEAD
 const { listLeads, getLead, updateLead } = require('../controllers/leadController');
 const learners = require('../controllers/learnerAdminController');
 const { rateLimit } = require('express-rate-limit');
 const learnerActionLimiter = rateLimit({ windowMs: 30 * 60 * 1000, max: 5, keyGenerator: (req) => `${req.user._id}:${req.params.id || 'link'}`, standardHeaders: true, legacyHeaders: false, message: { message: 'Too many learner account actions. Try again later.' } });
 const learnerReadLimiter = rateLimit({ windowMs: 60 * 1000, max: 120, keyGenerator: (req) => String(req.user._id), standardHeaders: true, legacyHeaders: false, message: { message: 'Too many learner data requests. Try again shortly.' } });
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
 // ✅ All admin routes require auth + admin
 router.use(protect, admin);
@@ -48,6 +51,7 @@ router.use(protect, admin);
 // ---------------- DASHBOARD ----------------
 router.get('/stats', getDashboardStats);
 
+<<<<<<< HEAD
 // ---------------- LEADS --------------------
 router.get('/leads', listLeads);
 router.get('/leads/:id', getLead);
@@ -60,6 +64,8 @@ router.patch('/learners/:id/status', learnerActionLimiter, learners.setLearnerSt
 router.post('/learners/:id/resend-verification', learnerActionLimiter, learners.resendVerification);
 router.post('/learners/link-lead', learnerActionLimiter, learners.linkLead);
 
+=======
+>>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 // ---------------- STUDENTS -----------------
 
 // List + create
