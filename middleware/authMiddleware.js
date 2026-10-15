@@ -18,14 +18,11 @@ const protect = async (req, res, next) => {
         return;
       }
 
-<<<<<<< HEAD
       if (req.user.accountRegistration && req.user.accountStatus === 'suspended') {
         res.status(403).json({ message: 'This account is currently unavailable. Please contact support.' });
         return;
       }
 
-=======
->>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       next();
     } catch (error) {
       console.error(error);
@@ -49,7 +46,6 @@ const admin = (req, res, next) => {
   }
 };
 
-<<<<<<< HEAD
 const optionalLearner = async (req, res, next) => {
   const header = req.headers.authorization || '';
   if (!header) return next();
@@ -64,6 +60,3 @@ const optionalLearner = async (req, res, next) => {
 };
 
 module.exports = { protect, admin, optionalLearner };
-=======
-module.exports = { protect, admin };
->>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
 const router = express.Router();
@@ -13,23 +12,4 @@ router.post('/login', codeLimiter, auth.loginUser);
 router.post('/password-reset/request', codeLimiter, auth.requestPasswordReset);
 router.post('/password-reset/confirm', codeLimiter, auth.resetPasswordWithCode);
 router.put('/reset-password/:id', protect, auth.resetPassword);
-=======
-// routes/authRoutes.js
-const express = require('express');
-const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
-const {
-  loginUser,
-  registerStudent,
-  resetPassword,
-} = require('../controllers/authController');
-
-// Public
-router.post('/register-student', registerStudent);
-router.post('/login', loginUser);
-
-// Protected reset password
-router.put('/reset-password/:id', protect, resetPassword);
-
->>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 module.exports = router;

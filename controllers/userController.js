@@ -2,10 +2,7 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const { addPasswordHistoryEntry } = require('../utils/passwordHistory');
-<<<<<<< HEAD
 const AuditLog = require('../models/AuditLog');
-=======
->>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
 // --- Helper function to ensure we only return necessary student data ---
 const studentProjection =
@@ -161,11 +158,7 @@ exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
       .select(
-<<<<<<< HEAD
         'name email mobile course curriculum grade school country parentName parentEmail parentMobile emailVerified accountRegistration accountStatus avatarUrl status totalPaidHours totalHoursUsed hoursHistory batchId isOneOnOne enrollmentDate profilePictureUrl registeredFrom leadSource leadIntent registrationUrl sourcePage referrerUrl createdAt'
-=======
-        'name email mobile course grade school status totalPaidHours totalHoursUsed hoursHistory batchId isOneOnOne enrollmentDate profilePictureUrl'
->>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
       )
       .populate({
         path: 'batchId',
@@ -193,7 +186,6 @@ exports.getMe = async (req, res) => {
 // @route   PATCH /api/users/me
 // @access  Private
 exports.updateMe = async (req, res) => {
-<<<<<<< HEAD
   const body = req.body || {};
   const editableFields = new Set(['name','mobile','course','curriculum','grade','school','country','parentName','parentEmail','parentMobile']);
   const forbidden = Object.keys(body).find((field) => !editableFields.has(field));
@@ -205,9 +197,6 @@ exports.updateMe = async (req, res) => {
   if (mobile !== undefined && (typeof mobile !== 'string' || !/^\+[1-9]\d{7,14}$/.test(mobile))) return res.status(400).json({ message: 'Mobile must use E.164 format.' });
   if (parentMobile !== undefined && parentMobile !== '' && (typeof parentMobile !== 'string' || !/^\+[1-9]\d{7,14}$/.test(parentMobile))) return res.status(400).json({ message: 'Guardian mobile must use E.164 format.' });
   if (parentEmail !== undefined && parentEmail !== '' && (typeof parentEmail !== 'string' || !/^\S+@\S+\.\S+$/.test(parentEmail))) return res.status(400).json({ message: 'Enter a valid guardian email.' });
-=======
-  const { name, mobile, course, grade, school } = req.body;
->>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
 
   try {
     const user = await User.findById(req.user.id);
@@ -216,7 +205,6 @@ exports.updateMe = async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-<<<<<<< HEAD
     const trackedFields = ['name','mobile','course','curriculum','grade','school','country','parentName','parentEmail','parentMobile'];
     const changedFields = trackedFields.filter((field) => body[field] !== undefined && String(body[field]) !== String(user[field] ?? ''));
     if (name !== undefined) user.name = name.trim();
@@ -236,17 +224,6 @@ exports.updateMe = async (req, res) => {
     const updated = await User.findById(user._id).select('name email mobile course curriculum grade school country parentName parentEmail parentMobile emailVerified accountRegistration accountStatus avatarUrl profilePictureUrl registeredFrom leadSource leadIntent registrationUrl sourcePage referrerUrl createdAt');
     if (updated.accountRegistration) return res.json({ id: String(updated._id), name: updated.name, email: updated.email, emailVerified: !!updated.emailVerified, avatarUrl: updated.avatarUrl || updated.profilePictureUrl || null, curriculum: updated.curriculum || '', course: updated.course || '', grade: updated.grade || '', school: updated.school || '', country: updated.country || '', mobile: updated.mobile || '', parentName: updated.parentName || '', parentEmail: updated.parentEmail || '', parentMobile: updated.parentMobile || '' });
     res.json(updated);
-=======
-    user.name = name || user.name;
-    user.mobile = mobile || user.mobile;
-    user.course = course || user.course;
-    user.grade = grade || user.grade;
-    user.school = school || user.school;
-
-    await user.save();
-
-    res.json({ message: 'Profile updated successfully' });
->>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
   } catch (error) {
     console.error('Error updating user profile:', error);
     res
@@ -332,8 +309,4 @@ exports.createPurchaseRequest = async (req, res) => {
       message: 'Server Error: Failed to submit purchase request.',
     });
   }
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86

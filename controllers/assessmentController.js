@@ -149,7 +149,6 @@ exports.startPublicAssessment = async (req, res) => {
       ? candidate.email
       : `guest-${mobileDigits}@no-email.lurnex.me`;
 
-<<<<<<< HEAD
     // Only an authenticated verified learner may associate this attempt with
     // their account. Anonymous candidate details are never used to select an
     // account ID, even when the email matches an existing learner.
@@ -157,9 +156,6 @@ exports.startPublicAssessment = async (req, res) => {
       ? await User.findOne({ _id: req.user._id, role: 'student', accountRegistration: true, accountStatus: { $ne: 'suspended' } })
       : await User.findOne({ email: lookupEmail, accountRegistration: { $ne: true } });
     if (req.user && !student) return res.status(401).json({ message: 'Learner account authentication is required.' });
-=======
-    let student = await User.findOne({ email: lookupEmail });
->>>>>>> df0a909acaa384d97f588a44aa8d8a80e4356e86
     let isNewStudent = false;
     if (!student) {
       isNewStudent = true;
